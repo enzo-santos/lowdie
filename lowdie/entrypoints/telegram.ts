@@ -1,4 +1,4 @@
-import {Lowdie} from "../index";
+import {Lowdie} from "../lowdie";
 import TelegramBot from 'node-telegram-bot-api';
 
 let bot = undefined;

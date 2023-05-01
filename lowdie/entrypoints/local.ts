@@ -1,4 +1,4 @@
-import {Lowdie} from "../index";
+import {Lowdie} from "../lowdie";
 import * as readline from "readline";
 
 const rl = readline.createInterface({
