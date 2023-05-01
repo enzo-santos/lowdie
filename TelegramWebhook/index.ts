@@ -19,65 +19,17 @@ type RockPaperScissorsState = {
 };
 type GameState = TicTacToeSetupState | TicTacToeState | RockPaperScissorsState;
 
-type ChatContext = {key: BotState, game?: GameState};
+type ChatContext = { key: BotState, game?: GameState };
 
-interface UserInputMode {
-  keyboard?: Array<any> | null;
-  inline_keyboard?: (Array<any> | null);
-  one_time_keyboard: boolean;
-}
-
-abstract class UserInput {
-  readonly options: Array<string>;
-
-  protected constructor(options: Array<string>) {
-    this.options = options;
-  }
-
-  abstract onReplyMarkup(): UserInputMode;
-}
-
-class TextInput extends UserInput {
-  constructor(options: Array<string>) {
-    super(options);
-  }
-
-  onReplyMarkup(): UserInputMode {
-    return {
-      keyboard: this.options.map((text) => [{text: text}]),
-      one_time_keyboard: true,
-    };
-  };
-}
-
-class CardInput extends UserInput {
-  constructor(options: Array<string>) {
-    super(options);
-  }
-
-  onReplyMarkup(): UserInputMode {
-    return {
-      inline_keyboard: this.options.map((text) => [{text: text, callback_data: text}]),
-      one_time_keyboard: true,
-    };
-  }
-}
-
-class NoInput extends UserInput {
-  constructor() {
-    super([]);
-  }
-
-  onReplyMarkup(): UserInputMode {
-    return {one_time_keyboard: true};
-  }
-
-}
+type TextPlayerInput = { type: 'text', options: string[] };
+type CardPlayerInput = { type: 'card', options: string[] };
+type NonePlayerInput = { type: 'none' };
+export type PlayerInput = TextPlayerInput | CardPlayerInput | NonePlayerInput;
 
 abstract class BotState {
   abstract texts(context: ChatContext): Generator<string, void, void>;
 
-  abstract onUserQuestion(context: ChatContext): UserInput;
+  abstract onUserQuestion(context: ChatContext): PlayerInput;
 
   abstract onUserAnswer(context: ChatContext, label: string): BotState;
 }
@@ -88,8 +40,8 @@ namespace GeneralStates {
       yield 'Hi! I\'m Lowdie, but you can call me Lodi. I\'m pretty sure we\'re gonna have fun! So, what we\'re gonna play?';
     }
 
-    onUserQuestion(context: ChatContext): UserInput {
-      return new CardInput(['Rock-paper-scissors', 'Tic-tac-toe']);
+    onUserQuestion(context: ChatContext): PlayerInput {
+      return {type: 'card', options: ['Rock-paper-scissors', 'Tic-tac-toe']};
     }
 
     onUserAnswer(context: ChatContext, label: string): BotState {
@@ -109,7 +61,7 @@ namespace GeneralStates {
       yield 'What we\'re gonna play now?';
     }
 
-    onUserQuestion(context: ChatContext): UserInput {
+    onUserQuestion(context: ChatContext): PlayerInput {
       return BotStates.BOT_START_CONVERSATION.onUserQuestion(context);
     }
 
@@ -123,8 +75,8 @@ namespace GeneralStates {
       yield 'Hey, that\'s invalid!';
     }
 
-    onUserQuestion(context: ChatContext): UserInput {
-      return new NoInput();
+    onUserQuestion(context: ChatContext): PlayerInput {
+      return {type: 'none'};
     }
 
     onUserAnswer(context: ChatContext, label: string): BotState {
@@ -139,15 +91,17 @@ namespace RockPaperScissorsStates {
       context.game = {name: 'rock-paper-scissors'};
     }
 
-    onUserQuestion(context: ChatContext): UserInput {
-      return new CardInput(['Rock', 'Paper', 'Scissors']);
+    onUserQuestion(context: ChatContext): PlayerInput {
+      return {type: 'card', options: ['Rock', 'Paper', 'Scissors']};
     }
 
     onUserAnswer(context: ChatContext, label: string): BotState {
+      label = label.toLowerCase();
       if (label === 'rock' || label === 'paper' || label == 'scissors') {
         (context.game as RockPaperScissorsState).move = label;
+        return BotStates.RPS_BOT_MOVE;
       }
-      return BotStates.RPS_BOT_MOVE;
+      return BotStates.BOT_INVALID_STATE;
     }
   }
 
@@ -168,7 +122,7 @@ namespace RockPaperScissorsStates {
       yield* BotStates.RPS_POST_GAME.texts(context);
     }
 
-    onUserQuestion(context: ChatContext): UserInput {
+    onUserQuestion(context: ChatContext): PlayerInput {
       return BotStates.RPS_POST_GAME.onUserQuestion(context);
     }
 
@@ -182,8 +136,8 @@ namespace RockPaperScissorsStates {
       yield 'Wanna play again?';
     }
 
-    onUserQuestion(context: ChatContext): UserInput {
-      return new CardInput(['Of course!', 'No, thanks.']);
+    onUserQuestion(context: ChatContext): PlayerInput {
+      return {type: 'card', options: ['Of course!', 'No, thanks.']};
     }
 
     onUserAnswer(context: ChatContext, label: string): BotState {
@@ -211,8 +165,8 @@ namespace TicTacToeStates {
       yield* BotStates.TTT_SETTINGS.texts(context);
     }
 
-    onUserQuestion(context: ChatContext): UserInput {
-      return new NoInput();
+    onUserQuestion(context: ChatContext): PlayerInput {
+      return {type: 'none'};
     }
 
     onUserAnswer(context: ChatContext, label: string): BotState {
@@ -232,8 +186,8 @@ namespace TicTacToeStates {
       yield msg.join('\n');
     }
 
-    onUserQuestion(context: ChatContext): UserInput {
-      return new NoInput();
+    onUserQuestion(context: ChatContext): PlayerInput {
+      return {type: 'none'};
     }
 
     onUserAnswer(context: ChatContext, label: string): BotState {
@@ -288,8 +242,8 @@ namespace TicTacToeStates {
       game.board = ttt.Board.empty(game.difficulty);
     }
 
-    onUserQuestion(context: ChatContext): UserInput {
-      return new NoInput();
+    onUserQuestion(context: ChatContext): PlayerInput {
+      return {type: 'none'};
     }
 
     onUserAnswer(context: ChatContext, label: string): BotState {
@@ -310,8 +264,8 @@ namespace TicTacToeStates {
       yield* BotStates.TTT_GAME_ON_PROGRESS.texts(context);
     }
 
-    onUserQuestion(context: ChatContext): UserInput {
-      return new NoInput();
+    onUserQuestion(context: ChatContext): PlayerInput {
+      return {type: 'none'};
     }
 
     onUserAnswer(context: ChatContext, label: string): BotState {
@@ -325,8 +279,8 @@ namespace TicTacToeStates {
       yield* BotStates.TTT_GAME_ON_PROGRESS.texts(context);
     }
 
-    onUserQuestion(context: ChatContext): UserInput {
-      return new NoInput();
+    onUserQuestion(context: ChatContext): PlayerInput {
+      return {type: 'none'};
     }
 
     onUserAnswer(context: ChatContext, label: string): BotState {
@@ -343,8 +297,8 @@ namespace TicTacToeStates {
       yield 'Your turn.';
     }
 
-    onUserQuestion(context: ChatContext): UserInput {
-      return new NoInput();
+    onUserQuestion(context: ChatContext): PlayerInput {
+      return {type: 'none'};
     }
 
     onUserAnswer(context: ChatContext, label: string): BotState {
@@ -410,8 +364,8 @@ namespace TicTacToeStates {
       yield 'You can\'t put it there, it\'s already occupied!';
     }
 
-    onUserQuestion(context: ChatContext): UserInput {
-      return new NoInput();
+    onUserQuestion(context: ChatContext): PlayerInput {
+      return {type: 'none'};
     }
 
     onUserAnswer(context: ChatContext, label: string): BotState {
@@ -424,8 +378,8 @@ namespace TicTacToeStates {
       yield 'Hey, this doesn\'t even exist!';
     }
 
-    onUserQuestion(context: ChatContext): UserInput {
-      return new NoInput();
+    onUserQuestion(context: ChatContext): PlayerInput {
+      return {type: 'none'};
     }
 
     onUserAnswer(context: ChatContext, label: string): BotState {
@@ -438,8 +392,8 @@ namespace TicTacToeStates {
       yield 'Hmmm, I can\'t understand your position. If you say something like A1 or B2, I can definitely understand you. Shall we try?';
     }
 
-    onUserQuestion(context: ChatContext): UserInput {
-      return new NoInput();
+    onUserQuestion(context: ChatContext): PlayerInput {
+      return {type: 'none'};
     }
 
     onUserAnswer(context: ChatContext, label: string): BotState {
@@ -454,7 +408,7 @@ namespace TicTacToeStates {
       yield* BotStates.TTT_POST_GAME.texts(context);
     }
 
-    onUserQuestion(context: ChatContext): UserInput {
+    onUserQuestion(context: ChatContext): PlayerInput {
       return BotStates.TTT_POST_GAME.onUserQuestion(context);
     }
 
@@ -470,7 +424,7 @@ namespace TicTacToeStates {
       yield* BotStates.TTT_POST_GAME.texts(context);
     }
 
-    onUserQuestion(context: ChatContext): UserInput {
+    onUserQuestion(context: ChatContext): PlayerInput {
       return BotStates.TTT_POST_GAME.onUserQuestion(context);
     }
 
@@ -486,7 +440,7 @@ namespace TicTacToeStates {
       yield* BotStates.TTT_POST_GAME.texts(context);
     }
 
-    onUserQuestion(context: ChatContext): UserInput {
+    onUserQuestion(context: ChatContext): PlayerInput {
       return BotStates.TTT_POST_GAME.onUserQuestion(context);
     }
 
@@ -500,8 +454,8 @@ namespace TicTacToeStates {
       yield 'Wanna play again?';
     }
 
-    onUserQuestion(context: ChatContext): UserInput {
-      return new CardInput(['Of course!', 'No, thanks.']);
+    onUserQuestion(context: ChatContext): PlayerInput {
+      return {type: 'card', options: ['Of course!', 'No, thanks.']};
     }
 
     onUserAnswer(context: ChatContext, label: string): BotState {
@@ -524,8 +478,8 @@ namespace TicTacToeStates {
       delete context.game;
     }
 
-    onUserQuestion(context: ChatContext): UserInput {
-      return new NoInput();
+    onUserQuestion(context: ChatContext): PlayerInput {
+      return {type: 'none'};
     }
 
     onUserAnswer(context: ChatContext, label: string): BotState {
@@ -561,18 +515,14 @@ class BotStates {
 }
 
 type StateDatabase = { [id: number]: ChatContext };
-let bot = undefined;
 
-type LowdieAnswer = {
-  text: string,
-  mode?: UserInputMode,
-};
+type LowdieAnswer = { text: string, input?: PlayerInput };
 
-class Lowdie {
+export class Lowdie {
   private readonly states: StateDatabase = {};
 
   * answer(chatId: number, text: string): Generator<LowdieAnswer, void, void> {
-    let state;
+    let state: BotState;
     let context: ChatContext | undefined = this.states[chatId];
     if (context == null) {
       state = BotStates.BOT_START_CONVERSATION;
@@ -592,104 +542,9 @@ class Lowdie {
     }
 
     const input = state.onUserQuestion(context);
-    yield {text: tailText, mode: input.onReplyMarkup()};
+    yield {text: tailText, input: input};
 
     if (state === BotStates.BOT_INVALID_STATE) return;
     context.key = state;
-  }
-}
-
-async function loadBot(root: string): Promise<any> {
-  const {WEBHOOK_ADDRESS, LOWDIE_TOKEN} = process.env;
-  if (LOWDIE_TOKEN === undefined) {
-    console.error('LOWDIE_TOKEN not defined');
-    throw 'Token environment variable not defined, please add LOWDIE_TOKEN to your environment.'
-  }
-
-  const lowdie = new Lowdie();
-
-  const TelegramBot = await import('node-telegram-bot-api');
-  const bot = new TelegramBot(LOWDIE_TOKEN);
-  await bot.setWebHook(WEBHOOK_ADDRESS, {certificate: root + '/crt.pem'});
-
-  bot.on('message', async (msg) => {
-    const chatId = msg['chat'].id;
-
-    const answers = lowdie.answer(chatId, msg.text.trim());
-    for (const answer of answers) {
-      const sendOptions = {parse_mode: 'Markdown'};
-      if (answer.mode) {
-        sendOptions['reply_markup'] = answer.mode;
-      }
-      await bot.sendMessage(chatId, answer.text, sendOptions);
-    }
-  });
-  // TODO
-  // bot.on('callback_query', async (query) => {
-  //   const chatId = query.message['chat'].id;
-  //
-  //   const action = query.data;
-  //   const context: ChatContext = states[chatId].context;
-  //   const currentState: BotState = context.key;
-  //   const nextState: BotState = currentState.onUserAnswer(context, action.trim());
-  //   await bot.answerCallbackQuery(query.id, {});
-  //   if (!nextState) {
-  //     return;
-  //   }
-  //
-  //   await loadState(bot, chatId, nextState);
-  // });
-  bot.on('polling_error', (m) => console.error(m));
-
-  return bot;
-}
-
-
-const readline = require('readline');
-
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
-
-function readLine(query: string): Promise<string> {
-  return new Promise((resolve) => {
-    rl.question(query, (answer) => {
-      resolve(answer);
-    });
-  });
-}
-
-async function main() {
-  const lowdie = new Lowdie();
-  for (; ;) {
-    const question = await readLine('> ');
-    const answers = lowdie.answer(0, question);
-    for (const answer of answers) {
-      console.log(answer.text);
-      if (answer.mode) {
-        console.log(answer.mode.inline_keyboard);
-        console.log(answer.mode.keyboard);
-        console.log(answer.mode.one_time_keyboard);
-      }
-    }
-  }
-}
-
-main();
-
-export default async function (context, req) {
-  console.log('a');
-  return;
-
-  if (bot === undefined) {
-    bot = await loadBot(context.executionContext.functionDirectory);
-  }
-
-  if (req.body) {
-    bot.processUpdate(req.body);
-    context.res = {status: 200, body: 'ok'};
-  } else {
-    context.res = {status: 404, body: 'error'};
   }
 }

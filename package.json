@@ -9,7 +9,7 @@
     "start:host": "func start",
     "start": "npm-run-all --parallel start:host watch",
     "test": "echo \"No tests yet...\"",
-    "local": "npm run build && node dist/TelegramWebhook/index.js"
+    "local": "npm run build && node dist/TelegramWebhook/entrypoints/local.js"
   },
   "description": "",
   "devDependencies": {
@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@types/node": "^15.6.1",
+    "@types/node-telegram-bot-api": "^0.61.6",
     "node-telegram-bot-api": "^0.53.0"
   }
 }
