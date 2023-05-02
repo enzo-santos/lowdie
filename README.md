@@ -1,3 +1,5 @@
+<img alt="A Lowdie bot" height="300" src="https://i.imgur.com/AgvVOsg.jpg" title="Lowdie"/>
+
 # Lowdie
 
 A nice bot who plays rock-paper-scissors and tic-tac-toe.
