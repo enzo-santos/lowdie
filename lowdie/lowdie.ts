@@ -216,8 +216,12 @@ namespace TicTacToeStates {
       const arg = match[2].toLowerCase();
       switch (match[1]) {
         case 'startmove': {
-          if (['you', 'me'].indexOf(arg) >= 0) {
-            game.startMove = {you: 'I', me: 'You'}[arg];
+          if (arg === 'you') {
+            game.startMove = 'I';
+            break;
+          }
+          if (arg === 'me') {
+            game.startMove = 'You';
             break;
           }
           return BotStates.BOT_INVALID_STATE;
@@ -516,9 +520,9 @@ class BotStates {
 
 type StateDatabase = { [id: number]: ChatContext };
 
-type LowdieAnswer = { text: string, input?: PlayerInput };
+export type LowdieAnswer = { text: string, input?: PlayerInput };
 
-export class Lowdie {
+export default class Lowdie {
   private readonly states: StateDatabase = {};
 
   * answer(chatId: number, text: string): Generator<LowdieAnswer, void, void> {

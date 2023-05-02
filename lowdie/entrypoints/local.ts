@@ -1,4 +1,4 @@
-import {Lowdie} from "../lowdie";
+import Lowdie from "../lowdie";
 import * as readline from "readline";
 
 const rl = readline.createInterface({
@@ -24,7 +24,7 @@ class LocalEntrypoint {
         const input = answer.input;
         if (input) {
           switch (input.type) {
-            case "none":
+            case 'none':
               break;
             case 'text':
             case 'card':
