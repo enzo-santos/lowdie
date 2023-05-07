@@ -6,28 +6,26 @@ A nice bot who plays rock-paper-scissors and tic-tac-toe.
     
 ## Usage
 
-### Locally
-
 Clone this repository:
 
 ```shell
-git clone https://github.com/enzo-santos/lowdie.git
-cd lowdie
+$ git clone https://github.com/enzo-santos/lowdie.git
+$ cd lowdie
 ```
 
 Install the dependencies:
 
 ```shell
-npm install
+$ npm install
 ```
 
-Run the bot locally:
+### On your local machine
 
 ```shell
 npm run local
 ```
 
-Interact with the bot:
+This script will show the following text:
 
 ```none
 $ Greet Lowdie!
@@ -66,13 +64,65 @@ $ Choose from "Rock", "Paper", "Scissors":
 
 Continue the interaction and have fun!
 
-### On Telegram (currently offline)
+### On my Telegram (currently offline)
 
 Start a conversation with [@lowdiebot](https://t.me/lowdiebot) on Telegram.
 
-### On your backend
+### On your Telegram
 
-#### Certificating your bot
+To create your own Telegram bot using Lowdie's implementation, start a
+ conversation with [@botfather](https://t.me/botfather) on Telegram, creating your new bot:
+
+> **You:** /newbot
+> 
+> **BotFather:** Alright, a new bot. How are we going to call it? Please choose a name for your bot.
+> 
+> **You:** *(pick a name for your bot)*
+> 
+> **BotFather:** Good. Now let's choose a username for your bot. It must end in `bot`. Like this, for example: 
+> TetrisBot or tetris_bot.
+> 
+> **You:** *(pick a username for your bot)*
+> 
+> **BotFather:** Done! Congratulations on your new bot. You will find it at *(your bot's url)*. You can now add a 
+> description, about section and profile picture for your bot, see /help for a list of commands. By the way, when you've
+> finished creating your cool bot, ping our Bot Support if you want a better username for it. Just make sure the bot is 
+> fully operational before you do this. 
+> 
+> Use this token to access the HTTP API: *(your bot's token)*. Keep your token secure and store it safely, it can be 
+> used by anyone to control your bot.
+>
+> For a description of the Bot API, see this page: https://core.telegram.org/bots/api
+
+Store your bot's authentication token **privately**, as the BotFather said.
+
+Additionally, create a file in this project's root directory named *.env* and add the following content to it:
+
+```dotenv
+LOWDIE_TOKEN=yourbotstoken
+```
+
+#### Hosting locally
+
+```shell
+$ npm run host
+```
+
+This will run an infinite script.
+
+Send a conversation with your bot on Telegram, using the link BotFather generated:
+
+> **You:** /start
+>
+> **YourBot:** Hi! I'm Lowdie, but you can call me Lodi. I'm pretty sure we're gonna have fun! So, what we're gonna play?
+
+Continue the interaction and have fun!
+
+Note that, if you stop the script, your Telegram bot will stop answering. That's why you should host your bot remotely.
+
+#### Hosting remotely
+
+##### Certificating your bot
 
 You need to install OpenSSL. You can Google to find out how to install it, but there is a simple way if you have Git 
 installed. First, make sure Git is installed (in my case, it's a portable version):
@@ -132,40 +182,7 @@ Store the generated *crt.pem* file (it doesn't necessarily need to be store priv
 
 Additionally, copy the file into this project's root directory.
 
-#### Authenticating your bot
-
-Start a conversation with [@botfather](https://t.me/botfather) on Telegram, creating your new bot:
-
-> **You:** /newbot
-> 
-> **BotFather:** Alright, a new bot. How are we going to call it? Please choose a name for your bot.
-> 
-> **You:** *(pick a name for your bot)*
-> 
-> **BotFather:** Good. Now let's choose a username for your bot. It must end in `bot`. Like this, for example: 
-> TetrisBot or tetris_bot.
-> 
-> **You:** *(pick a username for your bot)*
-> 
-> **BotFather:** Done! Congratulations on your new bot. You will find it at *(your bot's url)*. You can now add a 
-> description, about section and profile picture for your bot, see /help for a list of commands. By the way, when you've
-> finished creating your cool bot, ping our Bot Support if you want a better username for it. Just make sure the bot is 
-> fully operational before you do this. 
-> 
-> Use this token to access the HTTP API: *(your bot's token)*. Keep your token secure and store it safely, it can be 
-> used by anyone to control your bot.
->
-> For a description of the Bot API, see this page: https://core.telegram.org/bots/api
-
-Store your bot's authentication token **privately**, as the BotFather said.
-
-Additionally, create a file in this project's root directory named *.env* and add the following content to it:
-
-```dotenv
-LOWDIE_TOKEN=yourbotstoken
-```
-
-#### Hosting your bot
+##### Hosting your bot
 
 You'll need a hosting platform that supports webhooks. 
 [Azure](https://learn.microsoft.com/en-us/azure/azure-functions/create-first-function-cli-typescript?tabs=azure-cli%2Cbrowser&pivots=nodejs-model-v4#deploy-the-function-project-to-azure)

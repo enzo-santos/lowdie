@@ -1,20 +1,29 @@
 {
   "name": "lowdiebot",
   "version": "0.1.0",
+  "author": "Enzo Santos",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/enzo-santos/lowdie.git"
+  },
+  "main": "dist/lowdie/entrypoints/telegram.js",
   "scripts": {
     "build": "tsc",
-    "startLocal": "npm run build && functions-framework --target=lowdieTelegramWebhook --source dist/lowdie/entrypoints/telegram.js",
-    "deploy": "npm run build && gcloud functions deploy telegramLowdieWebhook --gen2 --region=us-central1 --runtime=nodejs16 --entry-point=lowdieTelegramWebhook --source=dist/lowdie/entrypoints/telegram.js --trigger-http --max-instances=10",
-    "local": "npm run build && node dist/lowdie/entrypoints/local.js"
+    "local": "npm run build && node dist/lowdie/entrypoints/local.js",
+    "host": "npm run build && node dist/lowdie/entrypoints/telegram.js",
+    "deploy": "npm run build && gcloud functions deploy telegramLowdieWebhook --gen2 --region=us-central1 --runtime=nodejs18 --entry-point=lowdieTelegramWebhook --source=dist/lowdie/entrypoints/telegram.js --trigger-http --allow-unauthenticated --max-instances=30"
   },
-  "description": "",
+  "engines": {
+    "node": ">=12.0.0"
+  },
+  "description": "A bot who plays games.",
   "devDependencies": {
-    "typescript": "^5.0.4"
+    "typescript": "^5.0.4",
+    "@types/node": "^18.16.3",
+    "@types/node-telegram-bot-api": "^0.61.6"
   },
   "dependencies": {
     "@google-cloud/functions-framework": "^3.2.0",
-    "@types/node": "^18.16.3",
-    "@types/node-telegram-bot-api": "^0.61.6",
     "dotenv": "^16.0.3",
     "node-telegram-bot-api": "^0.53.0"
   }

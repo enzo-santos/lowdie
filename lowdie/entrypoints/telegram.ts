@@ -1,5 +1,5 @@
 import Lowdie, {LowdieAnswer} from "../lowdie";
-import TelegramBot from 'node-telegram-bot-api';
+import * as TelegramBot from 'node-telegram-bot-api';
 import * as dotenv from 'dotenv';
 import functions from '@google-cloud/functions-framework';
 
@@ -23,7 +23,7 @@ async function onSendMessage(bot: TelegramBot, chatId: number, answer: LowdieAns
         sendOptions = {
           parse_mode: 'Markdown',
           reply_markup: {
-            keyboard: this.options.map((text) => [{text: text}]),
+            keyboard: input.options.map((text) => [{text: text}]),
             one_time_keyboard: true,
           },
         };
@@ -32,7 +32,7 @@ async function onSendMessage(bot: TelegramBot, chatId: number, answer: LowdieAns
         sendOptions = {
           parse_mode: 'Markdown',
           reply_markup: {
-            inline_keyboard: this.options.map((text) => [{text: text, callback_data: text}]),
+            inline_keyboard: input.options.map((text) => [{text: text, callback_data: text}]),
           },
         };
         break;
@@ -41,24 +41,28 @@ async function onSendMessage(bot: TelegramBot, chatId: number, answer: LowdieAns
   await bot.sendMessage(chatId, answer.text, sendOptions);
 }
 
-async function loadBot(url: URL, root: string): Promise<any> {
+type WebhookOptions = {
+  url: URL,
+  root: string,
+}
+
+async function loadBot(options?: WebhookOptions | undefined): Promise<any> {
   dotenv.config();
 
   const {WEBHOOK_ADDRESS, LOWDIE_TOKEN} = process.env;
-  const webhookAddress = WEBHOOK_ADDRESS ?? url.href;
   if (LOWDIE_TOKEN == null) {
     console.error('LOWDIE_TOKEN not defined');
     throw 'Token environment variable not defined, please add LOWDIE_TOKEN to your environment.'
   }
-  if (webhookAddress == null) {
-    console.error('WEBHOOK_ADDRESS not defined');
-    throw 'Webhook environment variable not defined, please add WEBHOOK_ADDRESS to your environment.'
-  }
 
   const lowdie = new Lowdie();
 
-  const bot = new TelegramBot(LOWDIE_TOKEN);
-  await bot.setWebHook(WEBHOOK_ADDRESS, {certificate: root + '/crt.pem'});
+  const bot = new TelegramBot(LOWDIE_TOKEN, {polling: options == null});
+
+  const webhookAddress = options?.url.href ?? WEBHOOK_ADDRESS;
+  if (webhookAddress != null) {
+    await bot.setWebHook(WEBHOOK_ADDRESS, {certificate: options!.root + '/crt.pem'});
+  }
 
   bot.on('message', async (msg) => {
     const chatId = msg['chat'].id;
@@ -82,12 +86,15 @@ async function loadBot(url: URL, root: string): Promise<any> {
   return bot;
 }
 
-export const lowdieTelegramWebhook: functions.HttpFunction = async (request, _) => {
-  if (bot == null) {
-    bot = await loadBot(new URL(request.originalUrl, request.protocol + '://' + request.get('host')), '.');
-  }
+async function main() {
+  bot = await loadBot();
+}
+main();
 
+export const lowdieTelegramWebhook: functions.HttpFunction = async (request, _) => {
+  // new URL(request.originalUrl, request.protocol + '://' + request.get('host')), '.'
   const body: any | undefined = request.rawBody?.toJSON();
+  console.log('body:' + body);
   if (body) {
     bot.processUpdate(body);
     // response.status(200);
